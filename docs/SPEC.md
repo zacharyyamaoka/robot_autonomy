@@ -671,6 +671,30 @@ robot-autonomy wandb push --root DIR [--config FILE] --project P [--entity E]
 output is one JSON document on stdout. Exit 0 on success, 2 on a usage, ledger or backlog error (message on stderr).
 `status --claim` writes `<root>/agent/claim.json` and rewrites the card.
 
+## Clarifications (v0.1, from the blind test lane)
+
+These close readings the first draft left open. They bind the tests and the code alike.
+
+1. An episode's `robot`, `source`, `what`, `avoidable` and `commissioning` are its first mention's.
+2. `Cause.last_t` is the latest `last_t` among its episodes. `causes(now=None)` anchors "recent" on the latest
+   `last_t` in the table (an empty table: no rows).
+3. Clocked means the episode's day has hours summed over the robots in scope (`robots` filter applied). The check is
+   per day, not per robot: a fleet clock.
+4. `daily` reports `working_h = 0.0` for a day with no hours.
+5. `ingest` counts: `interventions` = every new intervention line written this run, block asks included;
+   `blocks_closed` = close events written this run (a block already closed on an earlier run is not counted again).
+6. A fault or error streak still open at the last row that is shorter than the threshold is neither an intervention
+   nor a self-recovery (it is not over yet).
+7. `sources.diagnostics`: "path" is the record's dotted component `path` field, not the file.
+8. `read_labelled`: the Intervention id is the row's `id` unchanged.
+9. Backlog: a `move` to `"done"` behaves exactly like `mark_done` and logs a `done` event whose `evidence` is the item's
+   whole evidence tuple; a duplicate `add_evidence` writes nothing; `record_effect` from a status other than `"done"`
+   or with a verdict other than `"verified"`/`"ineffective"` raises `BacklogError`; `verified_t` is set only by
+   `record_effect`.
+10. `Effect.to_dict()` = `{"before": {"episodes", "hours", "per_100h"}, "after": {...}, "p_value", "drop", "verdict"}`.
+11. `team` `done_7d` counts every item whose `done_t` is in the last 7 days, whatever its status now.
+12. Actions carry `improvement` on propose / verified / ineffective / stale, `cause` on propose, `robot` on blocked.
+
 ## Drop-in for a coding agent
 
 - `AGENT.md`: the remit as a role prompt any agent harness can load.
