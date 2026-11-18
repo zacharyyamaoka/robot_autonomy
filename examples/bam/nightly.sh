@@ -9,8 +9,11 @@ set -euo pipefail
 OPT="${ROBOT_AUTONOMY_OPT:-$HOME/.local/opt/robot-autonomy}"
 STATE="${ROBOT_AUTONOMY_ROOT:-$HOME/.local/state/robot-autonomy}"
 PY="$OPT/.venv/bin/python"
+# WHY `python -m robot_autonomy`, never .venv/bin/robot-autonomy: deploy.sh builds the venv in a staging folder and
+# moves it into place, so the entry script's shebang points at a folder that no longer exists (exit 127, 2026-11-18).
+RA=("$PY" -m robot_autonomy)
 "$PY" "$OPT/examples/bam/export.py" --out "$STATE"
-"$OPT/.venv/bin/robot-autonomy" agent tick --root "$STATE" --config "$STATE/autonomy.toml" --json > "$STATE/agent/last_tick.json"
+"${RA[@]}" agent tick --root "$STATE" --config "$STATE/autonomy.toml" --json > "$STATE/agent/last_tick.json"
 mkdir -p "$HOME/robot_autonomy/reports"
-"$OPT/.venv/bin/robot-autonomy" report --root "$STATE" --config "$STATE/autonomy.toml" \
+"${RA[@]}" report --root "$STATE" --config "$STATE/autonomy.toml" \
   --out "$HOME/robot_autonomy/reports/robot-autonomy-bam-latest.html"
