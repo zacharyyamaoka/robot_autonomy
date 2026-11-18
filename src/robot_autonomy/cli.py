@@ -233,6 +233,13 @@ def cmd_todo_move(args) -> int:
     return 0
 
 
+def cmd_todo_edit(args) -> int:
+    item = Backlog(args.root).edit(args.id, by=args.by or "cli", title=args.title, plan=args.plan,
+                                   expected=args.expected, why=args.why, owner=args.owner, now=_now(args))
+    _print_item(args, item)
+    return 0
+
+
 def cmd_todo_evidence(args) -> int:
     item = Backlog(args.root).add_evidence(args.id, args.ref, by=args.by or "cli", now=_now(args))
     _print_item(args, item)
@@ -425,6 +432,12 @@ def build_parser() -> argparse.ArgumentParser:
         move.add_argument("--by")
         move.add_argument("--note")
         move.set_defaults(handler=cmd_todo_move)
+    edit = todo_commands.add_parser("edit")
+    edit.add_argument("id")
+    _common(edit, json_flag=True)
+    for field_name in ("title", "plan", "expected", "why", "owner", "by"):
+        edit.add_argument(f"--{field_name}")
+    edit.set_defaults(handler=cmd_todo_edit)
     evidence = todo_commands.add_parser("evidence")
     evidence.add_argument("id")
     evidence.add_argument("ref")

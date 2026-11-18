@@ -253,3 +253,17 @@ def test_the_console_script_is_installed(autonomy_root):
                                capture_output=True, text=True, timeout=120)
     assert completed.returncode == 0, completed.stderr
     json.loads(completed.stdout)
+
+
+def test_todo_edit_sharpens_a_proposal(tmp_path):
+    # Added 2026-11-18: the agent rewrites an auto-proposal's plan once it has read the episodes behind it.
+    root = str(tmp_path / "root")
+    proposed = run_cli("todo", "propose", "--root", root, "--title", "Remove power_or_replug", "--cause",
+                       "power_or_replug", "--json")
+    assert proposed.returncode == 0, proposed.stderr
+    item_id = json.loads(proposed.stdout)["id"]
+    edited = run_cli("todo", "edit", item_id, "--root", root, "--plan", "per-port hub", "--expected", "fewer replugs",
+                     "--by", "Robot Autonomy Agent", "--json")
+    assert edited.returncode == 0, edited.stderr
+    item = json.loads(edited.stdout)
+    assert (item["plan"], item["expected"]) == ("per-port hub", "fewer replugs")
