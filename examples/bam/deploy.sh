@@ -24,7 +24,8 @@ STAGE="$(mktemp -d "$HOME/.local/opt/.robot-autonomy.XXXXXX")"
 git -C "$REPO" archive "$REF" | tar -x -C "$STAGE"
 [ -f "$STAGE/src/robot_autonomy/agent.py" ] || { echo "no robot_autonomy at $REF" >&2; rm -rf "$STAGE"; exit 1; }
 if [ -d "$DEST/.venv" ]; then mv "$DEST/.venv" "$STAGE/.venv"; fi
-(cd "$STAGE" && env -u VIRTUAL_ENV nice -n 19 uv sync -q --no-dev)
+# WHY --no-editable: an editable install points at the staging folder, which is renamed a moment later.
+(cd "$STAGE" && env -u VIRTUAL_ENV nice -n 19 uv sync -q --no-dev --no-editable)
 OLD="$DEST.old.$$"
 [ -d "$DEST" ] && mv "$DEST" "$OLD"
 mv "$STAGE" "$DEST"

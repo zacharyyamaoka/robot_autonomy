@@ -11,8 +11,9 @@ STATE="${ROBOT_AUTONOMY_ROOT:-$HOME/.local/state/robot-autonomy}"
 PY="$OPT/.venv/bin/python"
 # WHY `python -m robot_autonomy`, never .venv/bin/robot-autonomy: deploy.sh builds the venv in a staging folder and
 # moves it into place, so the entry script's shebang points at a folder that no longer exists (exit 127, 2026-11-18).
-RA=("$PY" -m robot_autonomy)
-"$PY" "$OPT/examples/bam/export.py" --out "$STATE"
+# WHY -I: from $HOME, a bare ~/robot_autonomy folder would shadow the installed package as a namespace package.
+RA=("$PY" -I -m robot_autonomy)
+"$PY" -I "$OPT/examples/bam/export.py" --out "$STATE"
 "${RA[@]}" agent tick --root "$STATE" --config "$STATE/autonomy.toml" --json > "$STATE/agent/last_tick.json"
 mkdir -p "$HOME/robot_autonomy/reports"
 "${RA[@]}" report --root "$STATE" --config "$STATE/autonomy.toml" \
