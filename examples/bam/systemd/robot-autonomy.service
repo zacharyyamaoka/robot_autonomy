@@ -1,0 +1,22 @@
+# Nightly Robot Autonomy Agent pass for BAM: export the labelled asks and job hours, tick the agent (ingest, score,
+# verify, propose, alert, status card for the AI Team directory), rebuild the report.
+#
+# WHY each limit: a robot arm is powered on this host, so the job must never compete with it.
+#   CPUAffinity=2-5 16 17   CPUs 22-23 serve the fdcanusb IRQ; the arm's CAN loop must not wait on us
+#   Nice=15, CPUWeight=20, IOSchedulingClass=idle   it yields to everything
+#   MemoryMax=1G, TasksMax=16, TimeoutStartSec=900   one pass takes seconds; minutes means something hung
+[Unit]
+Description=Robot Autonomy Agent nightly tick (BAM)
+After=bam-interventions.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bash %h/.local/opt/robot-autonomy/examples/bam/nightly.sh
+Nice=15
+IOSchedulingClass=idle
+CPUWeight=20
+CPUAffinity=2-5 16 17
+MemoryMax=1G
+TasksMax=16
+TimeoutStartSec=900
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin

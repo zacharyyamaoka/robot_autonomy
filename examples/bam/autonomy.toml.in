@@ -1,0 +1,40 @@
+# BAM's Robot Autonomy Agent config. deploy.sh writes it to $STATE/autonomy.toml with @STATE@ and @HOME@ filled in.
+name = "Robot Autonomy Agent"
+owner = "Robot Autonomy Agent"
+dispatcher = "dispatcher"
+activity_agent = "Robot Activity Agent"
+# WHY hands_on only: the R ladder's gates read "hours between hands-on interventions" (Zach, 2026-11-17); remote asks
+# are counted and shown, and become their own reading if they start to dominate.
+count_levels = ["hands_on"]
+window_days = 7
+top_causes = 3
+min_episodes = 3
+block_alert_s = 1800
+remind_s = 86400
+status_path = "@STATE@/team/status.json"
+
+# WHY job hours: miles between disengagements over total miles (examples/bam/export.py has the reasoning).
+# When the Robot Activity Agent's feed lands, replace this table with:
+#   kind = "robot_activity"
+#   root = "@HOME@/.local/state/robot-activity/bam"
+#   basis = "activity"
+[hours]
+kind = "jsonl"
+path = "@STATE@/hours.jsonl"
+
+[[source]]
+kind = "labelled"
+path = "@STATE@/sources/bam_asks.jsonl"
+source = "chat"
+
+[[source]]
+kind = "labelled"
+path = "@STATE@/sources/bam_reports.jsonl"
+source = "human"
+
+[links]
+repo = "@HOME@/robot_autonomy"
+report = "@HOME@/robot_autonomy/reports/robot-autonomy-bam-latest.html"
+ledger = "@STATE@/interventions.jsonl"
+todo = "@STATE@/backlog/items"
+vault = "@HOME@/zach_brain/Projects/AI Team/Robot Autonomy Agent.md"

@@ -1,0 +1,124 @@
+{
+ "_what": "BAM's in-house autonomy rollup (bam_ws src/dev/bam_interventions, rollup.json + series.current), frozen 2026-11-18 for robot_autonomy's parity test. Data labelled through 2026-11-17, local time America/Vancouver.",
+ "labelled_through": "2026-11-17",
+ "asks": {
+  "mentions": 345,
+  "episodes": 150,
+  "hands_on_episodes": 104,
+  "remote_episodes": 46,
+  "commissioning_episodes": 11,
+  "avoidable_episodes": 66
+ },
+ "reports": {
+  "count": 70
+ },
+ "by_category": [
+  {
+   "level": "hands_on",
+   "category": "belt_or_items",
+   "episodes": 16,
+   "mentions": 40,
+   "avoidable": 10
+  },
+  {
+   "level": "hands_on",
+   "category": "clear_workcell",
+   "episodes": 5,
+   "mentions": 8,
+   "avoidable": 3
+  },
+  {
+   "level": "hands_on",
+   "category": "inspect",
+   "episodes": 15,
+   "mentions": 41,
+   "avoidable": 4
+  },
+  {
+   "level": "hands_on",
+   "category": "lights_or_cameras",
+   "episodes": 13,
+   "mentions": 25,
+   "avoidable": 8
+  },
+  {
+   "level": "hands_on",
+   "category": "mechanical",
+   "episodes": 11,
+   "mentions": 18,
+   "avoidable": 0
+  },
+  {
+   "level": "hands_on",
+   "category": "other_hands_on",
+   "episodes": 13,
+   "mentions": 20,
+   "avoidable": 2
+  },
+  {
+   "level": "hands_on",
+   "category": "power_or_replug",
+   "episodes": 22,
+   "mentions": 83,
+   "avoidable": 9
+  },
+  {
+   "level": "hands_on",
+   "category": "rehome_or_reposition_arm",
+   "episodes": 9,
+   "mentions": 22,
+   "avoidable": 7
+  },
+  {
+   "level": "remote",
+   "category": "answer_robot_question",
+   "episodes": 10,
+   "mentions": 29,
+   "avoidable": 4
+  },
+  {
+   "level": "remote",
+   "category": "approve_robot_run",
+   "episodes": 13,
+   "mentions": 25,
+   "avoidable": 2
+  },
+  {
+   "level": "remote",
+   "category": "other_remote",
+   "episodes": 9,
+   "mentions": 14,
+   "avoidable": 8
+  },
+  {
+   "level": "remote",
+   "category": "run_robot_command",
+   "episodes": 14,
+   "mentions": 20,
+   "avoidable": 9
+  }
+ ],
+ "by_robot": {
+  "full_arm": 60,
+  "rack_1dof": 44,
+  "belt": 16,
+  "cameras": 11,
+  "other_hw": 10,
+  "hyper_box": 9
+ },
+ "kpi_7d": {
+  "2026-11-17": {
+   "powered_h": 122.05,
+   "hands_on_clocked": 61,
+   "mtbi_asks_h": 2.0,
+   "level_asks": "R1"
+  },
+  "2026-11-16": {
+   "powered_h": 97.08,
+   "hands_on_clocked": 54,
+   "mtbi_asks_h": 1.8,
+   "level_asks": "R1"
+  }
+ },
+ "tz": "America/Vancouver"
+}

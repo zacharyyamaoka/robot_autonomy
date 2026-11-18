@@ -1,0 +1,12 @@
+# Runs robot-autonomy.service once a night, after bam-interventions.timer (04:40) has labelled yesterday's chats.
+# Persistent: a night the machine was off is made up at the next boot; ingest is idempotent, so nothing doubles.
+[Unit]
+Description=Robot Autonomy Agent nightly tick
+
+[Timer]
+OnCalendar=*-*-* 05:20
+Persistent=true
+RandomizedDelaySec=120
+
+[Install]
+WantedBy=timers.target
