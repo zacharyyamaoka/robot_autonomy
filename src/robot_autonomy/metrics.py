@@ -189,6 +189,9 @@ class Cause:
     recent: int                 # episodes with first_t >= now - recent_days
     last_t: float
     commissioning: bool         # every episode of the cause is commissioning
+    asked: int = 0              # of `episodes`, the ones on the asked reading
+    observed: int = 0           # ... and on the observed reading. WHY shown apart: the two readings often see the
+                                # same real event (an ask, then the person's own "done"), so `episodes` can count it twice
 
 
 def causes(episodes, *, since=None, until=None, now=None, recent_days: float = 7) -> list[Cause]:
@@ -221,7 +224,9 @@ def causes(episodes, *, since=None, until=None, now=None, recent_days: float = 7
                           share=len(group) / total_episodes, fixes=tuple(fixes),
                           recent=sum(1 for episode in group if episode.first_t >= recent_from),
                           last_t=max(episode.last_t for episode in group),
-                          commissioning=all(episode.commissioning for episode in group)))
+                          commissioning=all(episode.commissioning for episode in group),
+                          asked=sum(1 for episode in group if episode.reading == "asked"),
+                          observed=sum(1 for episode in group if episode.reading == "observed")))
     rows.sort(key=lambda row: (-row.episodes, -row.avoidable, row.level, row.cause))
     return rows
 

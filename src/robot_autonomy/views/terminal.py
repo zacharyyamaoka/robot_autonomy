@@ -48,13 +48,14 @@ def render(kpi, cause_rows, backlog: Backlog, blocks, *, now) -> str:
     person = "—" if kpi.human_s_per_h is None else f"{kpi.human_s_per_h:.0f} person-s per working hour"
     lines.append(f"{person} · blocked {_format.hours(kpi.blocked_h)}")
 
-    lines += ["", "Why they asked (episodes, avoidable, live improvement)"]
+    lines += ["", "Why they asked (episodes = asked + observed, avoidable, live improvement)"]
     if not cause_rows:
         lines.append("  (no interventions)")
     width = max([len(row.cause) for row in cause_rows] + [5])
     for row in cause_rows:
         live = backlog.live(row.cause)
-        lines.append(f"  {row.level:<8}  {row.cause:<{width}}  {row.episodes:>4}  {row.avoidable:>4}  "
+        split = f"({row.asked}+{row.observed})"
+        lines.append(f"  {row.level:<8}  {row.cause:<{width}}  {row.episodes:>4} {split:<9}  {row.avoidable:>4}  "
                      f"{live[0].id if live else '-'}")
 
     items = backlog.items()

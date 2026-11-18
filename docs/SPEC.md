@@ -269,6 +269,8 @@ class Cause:
     recent: int                 # episodes with first_t >= now - recent_days
     last_t: float
     commissioning: bool         # every episode of the cause is commissioning
+    asked: int = 0              # of `episodes`, on the asked reading
+    observed: int = 0           # of `episodes`, on the observed reading (shown apart: both can see one real event)
 
 def causes(episodes, *, since=None, until=None, now=None, recent_days: float = 7) -> list[Cause]
     # grouped by (level, cause); since <= first_t < until; sorted by (-episodes, -avoidable, level, cause)

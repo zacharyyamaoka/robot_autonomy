@@ -390,13 +390,15 @@ def report(root, *, config: AgentConfig, now, out_path, hours=None) -> Path:
     cause_table = []
     for row in cause_rows:
         live = agent.backlog.live(row.cause)
-        cause_table.append((_e(row.level.replace("_", "-")), _e(row.cause), str(row.episodes), str(row.avoidable),
-                            _e("; ".join(row.fixes[:3])), _e(live[0].id if live else "-")))
+        cause_table.append((_e(row.level.replace("_", "-")), _e(row.cause), str(row.episodes), str(row.asked),
+                            str(row.observed), str(row.avoidable), _e("; ".join(row.fixes[:3])),
+                            _e(live[0].id if live else "-")))
     parts.append('<h2>Why they asked</h2>'
-                 + (_table(("kind", "cause", "episodes", "avoidable", "what would remove it", "live improvement"),
-                           cause_table, numeric=(2, 3)) if cause_table
+                 + (_table(("kind", "cause", "episodes", "asked", "observed", "avoidable", "what would remove it",
+                            "live improvement"), cause_table, numeric=(2, 3, 4, 5)) if cause_table
                     else '<p class="note">No interventions recorded.</p>')
-                 + '<p class="note">All history, both readings. The agent works the avoidable causes in order and '
+                 + '<p class="note">All history. Episodes = asked + observed: the two readings can see the same real '
+                   'event, so read each column on its own too. The agent works the avoidable causes in order and '
                    'keeps a live improvement on the top ones.</p>')
 
     parts.append('<h2>The todo list</h2>' + _todo_list(items, tz)

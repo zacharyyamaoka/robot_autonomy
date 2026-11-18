@@ -397,3 +397,13 @@ def test_daily_matches_kpi_for_each_window():
         window = metrics.kpi(episodes, hours, end=row["day"], days=7, tz="UTC")
         assert row["level"] == window.level
         assert row["mtbi_h"] == pytest.approx(window.mtbi_h)
+
+
+def test_causes_split_episodes_by_reading():
+    # Added 2026-11-18: the two readings often see the same real event, so the table shows them apart.
+    from robot_autonomy.metrics import causes
+
+    asked = make_episode("a1", t_of("2026-11-10", 1.0), cause="power_or_replug", reading="asked")
+    observed = make_episode("o1", t_of("2026-11-10", 2.0), cause="power_or_replug", reading="observed")
+    (row,) = causes([asked, observed], now=t_of("2026-11-11"))
+    assert (row.episodes, row.asked, row.observed) == (2, 1, 1)

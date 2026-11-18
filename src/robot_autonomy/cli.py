@@ -180,10 +180,11 @@ def cmd_causes(args) -> int:
         print("no interventions")
         return 0
     width = max(len(row.cause) for row in rows)
-    print(f"{'kind':<8}  {'cause':<{width}}  {'episodes':>8}  {'avoidable':>9}  {'recent':>6}  what would remove it")
+    print(f"{'kind':<8}  {'cause':<{width}}  {'episodes':>8}  {'asked':>5}  {'observed':>8}  {'avoidable':>9}  "
+          f"{'recent':>6}  what would remove it")
     for row in rows:
-        print(f"{row.level:<8}  {row.cause:<{width}}  {row.episodes:>8}  {row.avoidable:>9}  {row.recent:>6}  "
-              f"{'; '.join(row.fixes[:2])}")
+        print(f"{row.level:<8}  {row.cause:<{width}}  {row.episodes:>8}  {row.asked:>5}  {row.observed:>8}  "
+              f"{row.avoidable:>9}  {row.recent:>6}  {'; '.join(row.fixes[:2])}")
     return 0
 
 
