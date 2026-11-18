@@ -12,6 +12,7 @@ from pathlib import Path
 from .. import _format
 from ..agent import AgentConfig, AutonomyAgent
 from ..backlog import OPEN
+from ..hours import days_with_hours
 from ..metrics import ROBOT_LADDER, causes, cumulative_hours, daily
 from ..schema import READINGS
 from .terminal import level_line, readings_line
@@ -331,6 +332,10 @@ def report(root, *, config: AgentConfig, now, out_path, hours=None) -> Path:
     kpi = agent._kpi(all_episodes, hours_table, blocks, now)
     window_days = config.window_days
     rows = daily(all_episodes, hours_table, window_days=window_days, count_levels=config.count_levels, tz=tz)
+    # WHY trim: interventions may be labelled from long before the hours clock started; days before the first
+    # worked day have no ratio, and drawing them squeezes the real series into the right edge.
+    first_worked = next((index for index, row in enumerate(rows) if row["working_h"]), len(rows))
+    rows = rows[first_worked:]
     counted = agent.counted_episodes(all_episodes, hours_table)
     event_h, total_h = cumulative_hours(counted, hours_table, tz=tz)
     fit = agent.growth(all_episodes, hours_table)
@@ -378,13 +383,18 @@ def report(root, *, config: AgentConfig, now, out_path, hours=None) -> Path:
         growth_note = (f'Crow-AMSAA fit over {fit.n} counted episodes in {_format.hours(fit.total_h)}: β = '
                        f'{fit.beta:.2f} ({trend}); instantaneous MTBI {_format.hours(fit.mtbi_now_h)}, average '
                        f'{_format.hours(fit.mtbi_avg_h)}.')
+    elif len(days_with_hours(hours_table)) < config.growth_min_days:
+        growth_note = (f"Too early for a trend: the hours clock has run {len(days_with_hours(hours_table))} days, "
+                       f"and the fit waits for {config.growth_min_days}.")
     else:
         growth_note = "No fit yet (it needs at least two counted episodes)."
     parts.append('<h2>Reliability growth</h2>'
-                 '<div class="legend"><span><span class="swatch" style="background:var(--series-1)"></span>'
-                 'counted episodes</span><span><span class="swatch" style="background:var(--series-2)"></span>'
-                 'Crow-AMSAA expected count</span></div>'
-                 f'<figure>{_growth_chart(event_h, total_h, fit)}</figure><p class="note">{_e(growth_note)} '
+                 + ('' if growth_note.startswith("Too early") else
+                    '<div class="legend"><span><span class="swatch" style="background:var(--series-1)"></span>'
+                    'counted episodes</span><span><span class="swatch" style="background:var(--series-2)"></span>'
+                    'Crow-AMSAA expected count</span></div>'
+                    f'<figure>{_growth_chart(event_h, total_h, fit)}</figure>')
+                 + f'<p class="note">{_e(growth_note)} '
                  'A slope below 1 on this log-log plot (β &lt; 1) means each working hour needs fewer hands.</p>')
 
     cause_table = []

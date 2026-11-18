@@ -32,6 +32,7 @@ class AgentConfig:
     name: str = "Robot Autonomy Agent"
     owner: str = "Robot Autonomy Agent"      # default owner of the improvements it proposes
     dispatcher: str = "dispatcher"
+    growth_min_days: int = 14    # days with working hours before the Crow-AMSAA trend (and on_track) is reported
     activity_agent: str = "Robot Activity Agent"
     count_levels: tuple[str, ...] = ("hands_on",)
     window_days: int = 7
@@ -182,9 +183,13 @@ class AutonomyAgent:
                 and day_of(episode.first_t, self.config.tz) in clocked]
 
     def growth(self, episodes=None, hours=None) -> Growth | None:
-        """Crow-AMSAA over all history of counted episodes vs cumulative working hours."""
+        """Crow-AMSAA over all history of counted episodes vs cumulative working hours; None until the hours clock has
+        run `growth_min_days` days. WHY: on BAM's first tick (6 days of clock) the fit read beta 0.33, "thinning out",
+        and set on_track; a slope from a few days of bring-up is an artefact of the first day, not a trend."""
         episodes = self.episodes() if episodes is None else episodes
         hours = self.hours() if hours is None else hours
+        if len(days_with_hours(hours)) < self.config.growth_min_days:
+            return None
         event_h, total_h = cumulative_hours(self.counted_episodes(episodes, hours), hours, tz=self.config.tz)
         return growth(event_h, total_h)
 

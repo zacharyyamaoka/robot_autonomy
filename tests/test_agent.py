@@ -683,3 +683,21 @@ def test_root_layout(proposal_root):
     assert (proposal_root / "agent" / "kpi.jsonl").exists()
     assert (proposal_root / "agent" / "actions.jsonl").exists()
     assert (proposal_root / "team" / "status.json").exists()
+
+
+def test_growth_waits_for_two_weeks_of_clock(tmp_path):
+    # Added 2026-11-18: on BAM's first tick (6 days of clock) the fit read beta 0.33 and set on_track; a slope from
+    # a few days of bring-up is an artefact, so the agent reports no trend until growth_min_days of hours.
+    from robot_autonomy.agent import AgentConfig, AutonomyAgent
+    from robot_autonomy.ledger import Ledger
+    from robot_autonomy.schema import Intervention
+
+    ledger = Ledger(tmp_path)
+    days = day_range("2026-11-01", "2026-11-20")
+    for index, day in enumerate(days):
+        ledger.record(Intervention(id=f"iv-{index}", t=t_of(day, 10.0), robot="arm-1", level="hands_on",
+                                   cause="power_or_replug", source="chat"))
+    short = {("arm-1", day): 8.0 for day in days[:6]}
+    long = {("arm-1", day): 8.0 for day in days}
+    assert AutonomyAgent(tmp_path, AgentConfig(tz="UTC"), hours=short).growth() is None
+    assert AutonomyAgent(tmp_path, AgentConfig(tz="UTC"), hours=long).growth() is not None

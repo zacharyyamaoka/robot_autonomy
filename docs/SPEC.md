@@ -500,6 +500,7 @@ class AgentConfig:
     min_episodes: int = 3        # a cause needs this many live episodes before it gets a proposal
     block_alert_s: float = 1800.0
     stale_days: float = 7.0
+    growth_min_days: int = 14   # days with working hours before the growth trend (and on_track) is reported
     remind_s: float = 86400.0
     baseline_days: int = 28
     min_after_h: float = 24.0
