@@ -108,9 +108,12 @@ def _nice_floor(value: float) -> float:
 def _x_labels(count: int) -> list[int]:
     """Indices to label on a day axis: about six, always the last, never two crowding each other."""
     every = max(1, count // 6)
-    picked = [index for index in range(0, count, every)]
-    if picked and count - 1 - picked[-1] < max(1, every // 2):
+    picked = list(range(0, count, every))
+    # WHY at least two thirds of a step from the last label: "09-19" next to "09-20" overprinted in the hero video.
+    while len(picked) > 1 and count - 1 - picked[-1] < max(2, (2 * every + 2) // 3):
         picked.pop()
+    if picked and picked[-1] == count - 1:
+        return picked
     return picked + [count - 1] if count else []
 
 
