@@ -134,13 +134,17 @@ def test_assess_pending_until_enough_after_hours():
     )
     assert effect.after.hours == pytest.approx(10.0)
     assert effect.verdict == "pending"
-    # with min_after_h=5 the same data is tested: X ~ Bin(9, 10 / 40): P(X <= 0) = 0.75 ** 9 ~= 0.075 < 0.1
+    # with min_after_h=5 the same data is tested: X ~ Bin(9, 10 / 40): P(X <= 0) = 0.75 ** 9 ~= 0.075.
+    # 10 h reaches the second horizon (5 * 2**1), so this is look 1, which spends alpha / 4 = 0.025: still pending.
+    # (SPEC v0.1 looks rule, 2026-11-18: this assertion was "verified" under the earlier single-alpha rule.)
     effect = verify.assess(
         CAUSES, DONE_T, _verified_case(), HOURS, now=t_of("2026-11-12", 6.0), baseline_days=4, min_after_h=5.0,
         count_levels=("hands_on",), tz="UTC",
     )
     assert effect.p_value == pytest.approx(0.75**9)
-    assert effect.verdict == "verified"
+    assert effect.look == 1
+    assert effect.alpha == pytest.approx(0.025)
+    assert effect.verdict == "pending"
 
 
 def test_assess_with_no_after_days():

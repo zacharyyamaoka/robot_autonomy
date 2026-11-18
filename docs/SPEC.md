@@ -324,17 +324,25 @@ def assess(causes, done_t: float, episodes, hours: HoursTable, *, now: float, ro
            min_after_h=24.0, alpha=0.1, count_levels=("hands_on", "remote"), tz=None) -> Effect
 ```
 
-Rules for `assess`:
+Rules for `assess` (signature adds `reading: str | None = None`; `Effect` adds `reading`, `look`, `alpha`):
 - `D = day_of(done_t)`. **Before** = the `baseline_days` days ending the day before `D`. **After** = the days after
-  `D` up to the day before `day_of(now)` (complete days only). The done day itself is in neither.
+  `D` up to the day before `day_of(now)` (complete days only), cut to the current look's prefix (below). The done day
+  itself is in neither.
 - Each side counts clocked episodes (day has hours) whose cause is in `causes` and level in `count_levels`, by
-  `day_of(first_t)`, and the hours of its days (robots filter on both).
+  `day_of(first_t)`, and the hours of its days (robots filter on both), **on one reading only**: `reading`, or when
+  None the reading with the most before-window episodes (ties in `READINGS` order). WHY: the two readings often see
+  the same real event twice, and counting both makes the exact test over-confident.
+- **Looks** (group-sequential; WHY: the agent re-runs `assess` daily, and stopping at the first p < alpha inflates
+  false "verified" far past alpha). Look `k` is the largest `k` with after-hours `>= min_after_h * 2**k`; its after
+  side is the shortest prefix of after-days whose hours reach `min_after_h * 2**k`, and it spends
+  `alpha / 2**(k + 1)` (the looks' alphas sum to `alpha`). Before the first horizon, `look` is None.
 - Verdict, first match wins:
-  1. `after.hours < min_after_h` → `"pending"`;
+  1. `look is None` (after-hours `< min_after_h`) → `"pending"`;
   2. `before.episodes == 0` → `"ineffective"` if `after.episodes > 0`, else `"pending"` (no drop can be shown from 0);
-  3. `p_value < alpha` → `"verified"`;
+  3. `p_value < alpha / 2**(look + 1)` → `"verified"`;
   4. `after.per_100h >= before.per_100h` and `before.per_100h * after.hours / 100 >= 3` → `"ineffective"`;
   5. else `"pending"`.
+- `Effect.to_dict()` adds `"reading"`, `"look"` and `"alpha"` (the look's alpha).
 
 ### `backlog.py` — the agent's todo list (one writer API, many readers)
 
