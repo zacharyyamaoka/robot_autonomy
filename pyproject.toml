@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "robot-autonomy"
+version = "0.1.0"
+description = "Robot Autonomy Agent: count every human intervention from every source, rank their causes, propose fixes and verify each fix by measuring its cause go down. Working hours between interventions (MTBI), an R0-R4 ladder, Crow-AMSAA growth and a FRACAS-style todo list."
+readme = "README.md"
+authors = [{ name = "Zach Yamaoka" }]
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+keywords = ["robotics", "autonomy", "interventions", "disengagements", "FRACAS", "reliability growth", "agents", "robot_msgs"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+]
+# WHY robot-msgs + stdlib only (Zach: dependency-free runtime cores; every new package depends on robot_msgs):
+# the agent must drop into any robotics program. robot_msgs is used for DiagnosticRecord (sources/diagnostics.py);
+# wandb is an extra, imported only inside robot_autonomy.wandb_log.
+dependencies = ["robot-msgs>=0.3.0"]
+
+[project.optional-dependencies]
+wandb = ["wandb>=0.19"]
+test = ["pytest>=8"]
+# WHY an oracle extra: the Crow-AMSAA fit is checked against an independent library, never against itself.
+oracle = ["reliability>=0.9"]
+
+[project.scripts]
+robot-autonomy = "robot_autonomy.cli:main"
+
+[project.urls]
+Source = "https://github.com/zacharyyamaoka/robot_autonomy"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/robot_autonomy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "archive: reads one lab's real intervention data (local, not public; skipped when absent)",
+    "oracle: checks a fit against an independent library (skipped when the oracle extra is absent)",
+]
+
+[tool.ruff]
+line-length = 120
