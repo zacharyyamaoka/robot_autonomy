@@ -15,8 +15,8 @@ from robot_autonomy.sources.robot_activity import read_blocks, read_faults
 EVENT_SCHEMA = "robot-activity-event/1"
 
 
-def event(kind, item, t, *, robot="any", by=None, **extra) -> dict:
-    return {"schema": EVENT_SCHEMA, "t": t, "kind": kind, "id": item, "robot": robot, "by": by, **extra}
+def event(kind, item_id, t, *, robot="any", by=None, **extra) -> dict:
+    return {"schema": EVENT_SCHEMA, "t": t, "kind": kind, "id": item_id, "robot": robot, "by": by, **extra}
 
 
 def blocker(kind, why, eta_t=None) -> dict:
