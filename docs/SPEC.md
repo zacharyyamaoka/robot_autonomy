@@ -633,7 +633,9 @@ non-zero exit. `runner` is injectable for tests.
 def payload(root, *, config, now, hours=None) -> dict
     # pure, no wandb import: {"run_id": f"autonomy-{end}", "summary": {kpi fields}, "steps": daily(...),
     #  "tables": {"causes": [...], "backlog": [...], "blocks": [...]}}
-def push(root, *, config, now, project, entity=None, hours=None) -> dict   # idempotent per run id
+def push(root, *, config, now, project, entity=None, hours=None) -> dict   # idempotent per run id; logs the steps and
+    # the summary only: the tables go to <root>/tables/<run id>/<name>.jsonl, the summary names the folder (local_tables)
+    # and each table's row count (table/<name>_rows). Zach, 2026-11-21: W&B holds summary statistics; media goes to Rerun.
 ```
 
 ### `demo.py`

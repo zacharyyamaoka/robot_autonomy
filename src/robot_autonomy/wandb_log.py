@@ -1,6 +1,11 @@
 """Weights & Biases logging (extra `[wandb]`). W&B is a copy of the local ledger, never the source of truth.
 
 `payload` is pure and never imports wandb; only `push` does, inside the function.
+
+W&B holds summary statistics only (Zach, 2026-11-21: "to help limit W and B storage I think we need to just be using it for
+summary statistics; for the media-rich things we should be using rerun!"): `push` logs the daily steps and the summary, and
+writes the tables to `<root>/tables/<run id>/<name>.jsonl`; the summary names that folder (`local_tables`) and each table's
+row count (`table/<name>_rows`).
 """
 
 from __future__ import annotations
@@ -38,10 +43,17 @@ def payload(root, *, config: AgentConfig, now, hours=None) -> dict:
                        "blocks": [block.to_dict() for block in blocks]}}
 
 
-def _table(wandb, rows: list[dict]):
-    columns = sorted({key for row in rows for key in row})
-    data = [[_cell(row.get(column)) for column in columns] for row in rows]
-    return wandb.Table(columns=columns, data=data)
+def write_tables(folder, tables: dict[str, list[dict]]):
+    """Each table as <name>.jsonl (one row per line) in `folder`, rewritten whole through a rename."""
+    from pathlib import Path
+
+    folder = Path(folder)
+    folder.mkdir(parents=True, exist_ok=True)
+    for name, rows in tables.items():
+        partial = folder / f"{name}.jsonl.partial"
+        partial.write_text("".join(json.dumps(row, sort_keys=True, default=str) + "\n" for row in rows))
+        partial.replace(folder / f"{name}.jsonl")
+    return folder
 
 
 def _cell(value):
@@ -77,9 +89,12 @@ def push(root, *, config: AgentConfig, now, project, entity=None, hours=None) ->
                 flat[key] = value
         run.summary.update(flat)
         run.summary["last_logged_day"] = last_day
-        for name, rows in data["tables"].items():
-            if rows:
-                run.log({f"table/{name}": _table(wandb, rows)}, commit=False)
+        # WHY jsonl beside the ledger, never wandb.Table (Zach, 2026-11-21: W&B gets summary statistics)
+        from pathlib import Path
+
+        folder = write_tables(Path(root) / "tables" / data["run_id"], data["tables"])
+        run.summary["local_tables"] = str(folder)
+        run.summary.update({f"table/{name}_rows": len(rows) for name, rows in data["tables"].items()})
     finally:
         run.finish()
     return {"run_id": data["run_id"], "steps_logged": logged, "project": project, "entity": entity}
