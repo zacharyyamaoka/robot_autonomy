@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "robot-autonomy"
 version = "0.1.0"
-description = "Robot Autonomy Agent: count every human intervention from every source, rank their causes, propose fixes and verify each fix by measuring its cause go down. Working hours between interventions (MTBI), an R0-R4 ladder, Crow-AMSAA growth and a FRACAS-style todo list."
+description = "Counts every human intervention in a robot program, ranks their causes and tracks reliability growth (MTBI, Crow-AMSAA, FRACAS-style todo list)."
 readme = "README.md"
 authors = [{ name = "Zach Yamaoka" }]
 license = "MIT"
@@ -14,6 +14,9 @@ requires-python = ">=3.11"
 keywords = ["robotics", "autonomy", "interventions", "disengagements", "FRACAS", "reliability growth", "agents", "robot_msgs"]
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -35,7 +38,8 @@ oracle = ["reliability>=0.9"]
 robot-autonomy = "robot_autonomy.cli:main"
 
 [project.urls]
-Source = "https://github.com/zacharyyamaoka/robot_autonomy"
+Homepage = "https://github.com/zacharyyamaoka/robot_autonomy"
+Repository = "https://github.com/zacharyyamaoka/robot_autonomy"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/robot_autonomy"]
