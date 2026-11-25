@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ._files import read_jsonl
+from ._files import iter_jsonl, read_jsonl
 from .schema import day_of
 
 HoursTable = dict[tuple[str, str], float]    # {(robot, day): working hours}
@@ -53,7 +53,7 @@ def from_robot_activity(root, *, basis: str = "activity", tz: str | None = None)
     for robot, paths in sample_files(root).items():
         # SPEC: the robot is the <robot> folder the file sits in (the path names it; only the day is re-derived).
         for path in paths:
-            for row in read_jsonl(path):
+            for row in iter_jsonl(path):
                 try:
                     t = float(row["t"])
                     weight_s = _sample_s(row)

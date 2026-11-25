@@ -54,12 +54,13 @@ def append_jsonl(path: str | Path, rows) -> None:
             handle.write(dumps(row) + "\n")
 
 
-def read_jsonl(path: str | Path) -> list[dict]:
-    """Every parsable JSON object in the file, oldest first; unparsable lines are skipped; a missing file is []."""
+def iter_jsonl(path: str | Path):
+    """Yield every parsable JSON object in the file, oldest first, one at a time (unparsable lines are skipped; a
+    missing file yields nothing). WHY a generator: sample and activity files are tens of MB of ~1 KB rows; callers
+    that fold them into counters must not hold a day, let alone the archive, in memory (2026-11-25 OOM)."""
     path = Path(path)
     if not path.exists():
-        return []
-    rows = []
+        return
     with open(path, encoding="utf-8", errors="replace") as handle:
         for line in handle:
             line = line.strip()
@@ -70,8 +71,12 @@ def read_jsonl(path: str | Path) -> list[dict]:
             except ValueError:
                 continue
             if isinstance(row, dict):
-                rows.append(row)
-    return rows
+                yield row
+
+
+def read_jsonl(path: str | Path) -> list[dict]:
+    """Every parsable JSON object in the file, oldest first; unparsable lines are skipped; a missing file is []."""
+    return list(iter_jsonl(path))
 
 
 def write_json_atomic(path: str | Path, obj: Any, *, indent: int | None = 2) -> None:

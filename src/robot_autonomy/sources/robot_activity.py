@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .._files import read_jsonl
+from .._files import iter_jsonl, read_jsonl
 from ..hours import DEFAULT_SAMPLE_S, sample_files
 from ..schema import Block, Intervention
 
@@ -91,9 +91,11 @@ def read_faults(root, *, needs_human_after_s=600.0, tz=None) -> tuple[list[Inter
     for robot, paths in sample_files(root).items():
         rows = []
         for path in paths:
-            for row in read_jsonl(path):
+            for row in iter_jsonl(path):
                 try:
-                    rows.append((float(row["t"]), _sample_s(row), row))
+                    # WHY only health and reason, not the row: a streak needs just those, and whole rows of a robot's
+                    # history are what ran the nightly export out of memory (2026-11-25).
+                    rows.append((float(row["t"]), _sample_s(row), {"health": row.get("health"), "reason": row.get("reason")}))
                 except (KeyError, TypeError, ValueError):
                     continue
         rows.sort(key=lambda entry: entry[0])

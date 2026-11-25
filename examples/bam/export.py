@@ -126,7 +126,9 @@ def hours_rows(activity: Path = ACTIVITY, *, through: str | None = None, basis: 
         raise ValueError(f"basis must be 'activity' or 'powered', got {basis!r}")
     out = []
     for robot_dir in sorted(p for p in activity.glob("*") if p.is_dir() and p.name != "timeline"):
-        rows = []
+        # WHY keep (t, working, sample_s) and not the row: BAM's rows are ~1 KB each and 13 days of them held whole
+        # peaked at 1.4 GB, over the nightly unit's 1 GB cap (2026-11-25). Three numbers per row give the same hours.
+        rows: list[tuple[float, bool, float]] = []
         for path in sorted(glob.glob(str(robot_dir / "*.jsonl"))):
             with open(path) as handle:
                 for line in handle:
@@ -135,21 +137,21 @@ def hours_rows(activity: Path = ACTIVITY, *, through: str | None = None, basis: 
                     except ValueError:
                         continue
                     if "t" in row:
-                        rows.append(row)
+                        working = (row.get("kind") == "job" if basis == "activity"
+                                   else (row.get("state") or "") not in UNPOWERED)
+                        rows.append((row["t"], working, row.get("sample_s", 10.0)))
         seen: set[int] = set()
         days: dict[str, float] = collections.defaultdict(float)
-        for row in sorted(rows, key=lambda r: r["t"]):
-            slot = round(row["t"] / 10)
+        for t, working, sample_s in sorted(rows, key=lambda r: r[0]):
+            slot = round(t / 10)
             if slot in seen:
                 continue
             seen.add(slot)
-            day = dt.datetime.fromtimestamp(row["t"]).date().isoformat()
+            day = dt.datetime.fromtimestamp(t).date().isoformat()
             if through and day > through:
                 continue
-            working = (row.get("kind") == "job" if basis == "activity"
-                       else (row.get("state") or "") not in UNPOWERED)
             if working:
-                days[day] += row.get("sample_s", 10.0) / 3600
+                days[day] += sample_s / 3600
         out += [{"robot": robot_dir.name, "day": day, "hours": round(hours, 4)} for day, hours in sorted(days.items())]
     return out
 
